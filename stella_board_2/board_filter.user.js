@@ -5,6 +5,7 @@
 // @description  すてらぼーど２）募集ボードにフィルターをつける
 // @author       Yayau
 // @match        http://stella2.428.st/?mode=board
+// @updateURL    https://github.com/yayau774/userscripts/raw/main/stella_board_2/board_filter.user.js
 // ==/UserScript==
 
 (function() {
