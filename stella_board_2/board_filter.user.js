@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         stella board 2 / board filter
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  すてらぼーど２）募集ボードにフィルターをつける
 // @author       Yayau
 // @match        http://stella2.428.st/?mode=board
@@ -50,6 +50,7 @@
         <form id="yy-filter">
         <input type="text" placeholder="フィルター">
         <button type="submit">🔍</button>
+        <button type="reset">✖</button>
         </form>
         `);
     const form = document.getElementById("yy-filter");
@@ -81,6 +82,11 @@
             }
         });
     });
+
+    //  リセットのときも検索の初期化をする
+    form.addEventListener("reset", e =>{
+        initializeFilter();
+    })
 
     //  検索の初期化
     function initializeFilter(){
