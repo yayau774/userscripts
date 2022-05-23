@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         stella board 2 / board filter
-// @namespace    http://tampermonkey.net/
-// @version      0.2
+// @namespace    https://github.com/yayau774/userscripts
+// @version      0.3
 // @description  すてらぼーど２）募集ボードにフィルターをつける
 // @author       Yayau
 // @match        http://stella2.428.st/?mode=board
