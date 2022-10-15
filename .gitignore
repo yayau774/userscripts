@@ -1,3 +1,6 @@
 template.user.js
 *.html
-stgr/stgr_waittimer.user.js
+private/*
+other/*
+stgr/*
+
