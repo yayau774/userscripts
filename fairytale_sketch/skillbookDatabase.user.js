@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         New Userscript
+// @name         【童話画廊】スキルブックを記録する
 // @namespace    https://github.com/yayau774/userscripts
 // @version      0.1
-// @description  try to take over the world!
+// @description  スキルブックをローカルストレージに記録する　consoleで見れる　あと新規や変更があったときにアラート
 // @author       Yayau
 // @match        http://soraniwa.428.st/fs/?mode=skill
 // @updateURL    https://github.com/yayau774/userscripts/raw/main/fairytale_sketch/skillbookDatabase.user.js
@@ -58,6 +58,8 @@
   window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stored));
 
   // 表示
+  let willAlert = false;
+
   if(stored.length > 0){
     console.log("now skill: " + stored.length);
     console.log(stored);
@@ -66,10 +68,16 @@
   if(newSkill.length > 0){
     console.log("new skill: " + newSkill.length);
     console.log(newSkill);
+    willAlert = true;
   }
   if(modifiedSkill.length > 0){
     console.log("modified skill: " + modifiedSkill.length);
     console.log(modifiedSkill);
+    willAlert = true;
+  }
+
+  if(willAlert) {
+    alert(`新規${newSkill.length}件、変更${modifiedSkill.length}件`);
   }
 
 
