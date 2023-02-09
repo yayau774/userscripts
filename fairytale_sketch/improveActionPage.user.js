@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        【童話画廊】画廊ロビー（各種行動）ページを改変するなど
 // @namespace    https://github.com/yayau774/userscripts
-// @version      0.1
+// @version      0.2
 // @description  ほかの改変とたぶん喧嘩する　プロフィールページで戦闘設定をキャッシュしたりもする
 // @author       Yayau
 // @match        http://soraniwa.428.st/fs/*
@@ -46,7 +46,10 @@
   divs.forEach(e => {
     e.style.float = "unset";
     e.style.width = "480px";
-    e.querySelectorAll("span.status3:nth-child(3n+2)").forEach(e=>e.insertAdjacentHTML("afterend", '<hr class="dashline">'));
+    
+    for(let i of [2, 5]){
+      e.querySelectorAll("span.status3")[i].insertAdjacentHTML("afterend", '<hr class="dashline">');
+    }
 
     e.addEventListener('mouseenter', callbackShowStrategyButton);
     e.querySelector("img").closest("div").addEventListener('click', callbackShowStrategyButton);
