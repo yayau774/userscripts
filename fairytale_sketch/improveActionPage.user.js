@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        【童話画廊】画廊ロビー（各種行動）ページを改変するなど
 // @namespace    https://github.com/yayau774/userscripts
-// @version      0.2
+// @version      0.3
 // @description  ほかの改変とたぶん喧嘩する　プロフィールページで戦闘設定をキャッシュしたりもする
 // @author       Yayau
 // @match        http://soraniwa.428.st/fs/*
@@ -14,13 +14,16 @@
   // Your code here...
   const LOCAL_STORAGE_KEY = "yy-fs-storedStrategy";
 
-  // 行動画面以外で戦闘設定が存在すればそれをキャッシュする
-  if(new URL(window.location).searchParams.get("mode") != "action" && getStrategyDiv(document) ){
-    let strategies = JSON.parse(window.localStorage.getItem(LOCAL_STORAGE_KEY) ?? "{}");
-    let eno = document.title.split("ENo.")[1].match(/\d+/)[0]; // 自分のページだとurlからenoが取れない　タイトルを見る
-    let html = getStrategyDiv(document);
-    strategies[eno] = [Date.now(), html];
-    saveStrategy(strategies);
+  // 行動画面以外の処理
+  if(new URL(window.location).searchParams.get("mode") != "action"){
+    // 戦闘設定が存在すればそれをキャッシュする
+    if(getStrategyDiv(document)){
+      let strategies = JSON.parse(window.localStorage.getItem(LOCAL_STORAGE_KEY) ?? "{}");
+      let eno = document.title.split("ENo.")[1].match(/\d+/)[0]; // 自分のページだとurlからenoが取れない　タイトルを見る
+      let html = getStrategyDiv(document);
+      strategies[eno] = [Date.now(), html];
+      saveStrategy(strategies);
+    }
 
     return;
   }
