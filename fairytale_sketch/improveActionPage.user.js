@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        【童話画廊】画廊ロビー（各種行動）ページを改変するなど
 // @namespace    https://github.com/yayau774/userscripts
-// @version      0.3
+// @version      0.4
 // @description  ほかの改変とたぶん喧嘩する　プロフィールページで戦闘設定をキャッシュしたりもする
 // @author       Yayau
 // @match        http://soraniwa.428.st/fs/*
