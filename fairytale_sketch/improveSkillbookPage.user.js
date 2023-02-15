@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         【童話画廊】スキルブックをちょっと見やすく
 // @namespace    https://github.com/yayau774/userscripts
-// @version      0.1
+// @version      0.2
 // @description  try to take over the world!
 // @author       Yayau
-// @match        http://google.com/
+// @match        http://soraniwa.428.st/fs/?mode=skill
 // @updateURL    https://github.com/yayau774/userscripts/raw/main/fairytale_sketch/improveSkillbookPage.user.js
 // ==/UserScript==
 
