@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         【童話画廊】間違って突っ込んでもうちょっと待ってねって言われるのを防ぐやつ
+// @name         【童話画廊】間違って突っ込みにくくするやつ
 // @namespace    https://github.com/yayau774/userscripts
-// @version      0.4
-// @description  「5人そろってないときにsubmitそのものを止める」「待ち時間をローカルストレージに記録して表示」
+// @version      0.5
+// @description  「5人そろってないときにsubmitを止める」「待ち時間を表示」
 // @author       Yayau
 // @match        http://soraniwa.428.st/fs/*
 // @updateURL    https://github.com/yayau774/userscripts/raw/main/fairytale_sketch/safetyAction.user.js
@@ -11,21 +11,29 @@
 (function() {
   'use strict';
 
-  // Your code here...
+  // 基本的に何秒待たされるか　画廊ロビーで行動を送信した時にこの待ち時間を設定する
+  // 待ち時間が緩和されたときはここをいじる
+  const defaultWait = 120;
+
+  ///////////////////////////////////////////////////
+  // ここから下はいじってはいけない
+  //
+  const LOCAL_STRAGE_KEY = "yy-fs-wait";
+  const fullmember = document.querySelector("input[name=fullmember]");
+  const form = fullmember?.closest("form");
+
   safetyMemberSelect();
   safetyWait();
+  setTimerWhenAction();
 
   /**
    * 人数が揃ってるかどうか、フォーム送信前に確認させる
    */
   function safetyMemberSelect(){
     // 行動画面以外なら去る
-    const fullmemberCheck = document.querySelector("input[name=fullmember]");
-    if(!fullmemberCheck){return;}
+    if(!fullmember){return;}
 
-    const form = fullmemberCheck.closest("form");
     let members = Array.from(document.querySelectorAll("input[name=d1], input[name=d2], input[name=d3], input[name=d4]"));
-
 
     // jQueryによるイベントの止め方がわからない　フォームと無関係にどっか触るたびに人数判定をする苦肉の策
     document.addEventListener("click", checkFullmember);
@@ -33,8 +41,8 @@
 
     function checkFullmember(){
       if(members.find(e=>e.value=="")
-      && fullmemberCheck.closest("#selectmember").style.display != "none"
-      && fullmemberCheck.checked){
+      && fullmember.closest("#selectmember").style.display != "none"
+      && fullmember.checked){
         form.submit.disabled = true;
       }else{
         form.submit.disabled = false;
@@ -46,7 +54,6 @@
    * 待ち時間が発生した時、ローカルストレージに待ち時間後のタイムスタンプを入れて残り時間を表示するように
    */
   function safetyWait(){
-    const LOCAL_STRAGE_KEY = "yy-fs-wait";
 
     // 待ち時間表示があったら取得して記録
     const caution = Array.from(document.querySelectorAll("header div"))?.find(e=>e.textContent.includes("しばらくお待ちください…。"));
@@ -61,8 +68,7 @@
       return;
     }
 
-    // formを取得　失敗したら（たぶん）タイマー関係ないページなのでおわり
-    const form = document.querySelector("input[name=fullmember]")?.closest("form");
+    // formを取得　失敗したら（たぶん）待ち時間関係ないページなのでおわり
     if(!form){return;}
 
     // たいまー表示を追加し、submitをdisabledに
@@ -87,18 +93,33 @@
 
       diff = Math.floor(diff/1000);
       timer.textContent = `あと${diff}秒`;
+      form.submit.disabled = true;
     }, 1000);
 
 
-    function setWait(w){
-      window.localStorage.setItem(LOCAL_STRAGE_KEY, JSON.stringify(Date.now() + w * 1000));
-    }
-    function getWait(){
-      return JSON.parse(window.localStorage.getItem(LOCAL_STRAGE_KEY));
-    }
-    function unsetWait(){
-      window.localStorage.removeItem(LOCAL_STRAGE_KEY);
-    }
+  }
+
+  /**
+   * 行動ページで送信したら待ち時間をセットする
+   */
+  function setTimerWhenAction(){
+    // 行動ページじゃなければ抜ける
+    if(!fullmember){return;}
+
+    form.addEventListener("submit", e=>{
+      setWait(defaultWait);
+    });
+  }
+
+  // ローカルストレージ操作するやつら
+  function setWait(w){
+    window.localStorage.setItem(LOCAL_STRAGE_KEY, JSON.stringify(Date.now() + w * 1000));
+  }
+  function getWait(){
+    return JSON.parse(window.localStorage.getItem(LOCAL_STRAGE_KEY));
+  }
+  function unsetWait(){
+    window.localStorage.removeItem(LOCAL_STRAGE_KEY);
   }
 
   //  head最後にスタイルシートを追加
@@ -110,8 +131,4 @@
   }
   </style>`);
 })();
-
-
-
-
 
