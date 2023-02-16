@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         【童話画廊】間違って突っ込んでもうちょっと待ってねって言われるのを防ぐやつ
 // @namespace    https://github.com/yayau774/userscripts
-// @version      0.1
+// @version      0.3
 // @description  「5人そろってないときにsubmitそのものを止める」「待ち時間をローカルストレージに記録して表示」
 // @author       Yayau
-// @match        http://soraniwa.428.st/fs/
+// @match        http://soraniwa.428.st/fs/*
 // @updateURL    https://github.com/yayau774/userscripts/raw/main/fairytale_sketch/safetyAction.user.js
 // ==/UserScript==
 
@@ -19,12 +19,13 @@
    * 人数が揃ってるかどうか、フォーム送信前に確認させる
    */
   function safetyMemberSelect(){
+    // 行動画面以外なら去る
     const fullmemberCheck = document.querySelector("input[name=fullmember]");
+    if(!fullmemberCheck){return;}
+
     const form = fullmemberCheck.closest("form");
     let members = Array.from(document.querySelectorAll("input[name=d1], input[name=d2], input[name=d3], input[name=d4]"));
 
-    // 行動画面以外なら去る
-    if(!fullmemberCheck){return;}
 
     // jQueryによるイベントの止め方がわからない　フォームと無関係にどっか触るたびに人数判定をする苦肉の策
     document.addEventListener("click", e => {
@@ -80,6 +81,7 @@
         clearInterval(intervalID);
         unsetWait();
       }
+
       diff = Math.floor(diff/1000);
       timer.textContent = `あと${diff}秒`;
     }, 1000);
@@ -99,7 +101,7 @@
   //  head最後にスタイルシートを追加
   document.querySelector('head').insertAdjacentHTML('beforeend', `
   <style>
-  :disabled {
+  input[type="submit"]:disabled {
     background-color: gray;
     cursor: not-allowed;
   }
