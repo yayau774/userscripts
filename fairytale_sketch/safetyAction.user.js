@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         【童話画廊】間違って突っ込みにくくするやつ
 // @namespace    https://github.com/yayau774/userscripts
-// @version      0.5
+// @version      0.6
 // @description  「5人そろってないときにsubmitを止める」「待ち時間を表示」
 // @author       Yayau
 // @match        http://soraniwa.428.st/fs/*
@@ -84,16 +84,16 @@
     // 1000msごとの判定
     const intervalID = setInterval(() => {
       let diff = wait - Date.now();
+      diff = Math.floor(diff/1000);
+      timer.textContent = `あと${diff}秒`;
+      form.submit.disabled = true;
+
       if(diff <= 0){
         form.submit.disabled = false;
         timer.remove();
         clearInterval(intervalID);
         unsetWait();
       }
-
-      diff = Math.floor(diff/1000);
-      timer.textContent = `あと${diff}秒`;
-      form.submit.disabled = true;
     }, 1000);
 
 
