@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         【童話画廊】間違って突っ込んでもうちょっと待ってねって言われるのを防ぐやつ
 // @namespace    https://github.com/yayau774/userscripts
-// @version      0.3
+// @version      0.4
 // @description  「5人そろってないときにsubmitそのものを止める」「待ち時間をローカルストレージに記録して表示」
 // @author       Yayau
 // @match        http://soraniwa.428.st/fs/*
@@ -28,7 +28,10 @@
 
 
     // jQueryによるイベントの止め方がわからない　フォームと無関係にどっか触るたびに人数判定をする苦肉の策
-    document.addEventListener("click", e => {
+    document.addEventListener("click", checkFullmember);
+    document.addEventListener("DOMContentLoaded", checkFullmember);
+
+    function checkFullmember(){
       if(members.find(e=>e.value=="")
       && fullmemberCheck.closest("#selectmember").style.display != "none"
       && fullmemberCheck.checked){
@@ -36,7 +39,7 @@
       }else{
         form.submit.disabled = false;
       }
-    });
+    }
   }
 
   /**
