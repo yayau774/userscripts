@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         【童話画廊】間違って突っ込みにくくするやつ
 // @namespace    https://github.com/yayau774/userscripts
-// @version      0.7
+// @version      0.8
 // @description  「5人そろってないときにsubmitを止める」「待ち時間を表示」
 // @author       Yayau
 // @match        http://soraniwa.428.st/fs/*
@@ -13,19 +13,20 @@
 
   // 基本的に何秒待たされるか　画廊ロビーで行動を送信した時にこの待ち時間を設定する
   // 待ち時間が緩和されたときはここをいじる
-  // 通常待ち時間120秒+余裕3秒
-  const defaultWait = 123;
+  const defaultWait = 120;
 
   ///////////////////////////////////////////////////
   // ここから下はいじってはいけない
   //
   const LOCAL_STRAGE_KEY = "yy-fs-wait";
+  const LOCAL_STRAGE_KEY_FLAG_SUBMIT = "yy-fs-submit-battle";
   const fullmember = document.querySelector("input[name=fullmember]");
   const form = fullmember?.closest("form");
 
   safetyMemberSelect();
+  setWaitAfterJumpOnSubmit();
   safetyWait();
-  setTimerWhenAction();
+  setSubmitFlagTrueWhenAction();
 
   /**
    * 人数が揃ってるかどうか、フォーム送信前に確認させる
@@ -101,14 +102,27 @@
   }
 
   /**
-   * 行動ページで送信したら待ち時間をセットする
+   * 行動ページで送信しページ遷移を確認したらタイマーをセット
    */
-  function setTimerWhenAction(){
+  function setWaitAfterJumpOnSubmit(){
+    // submitによるページ遷移直後かどうかを確認する
+    const trueIfSubmit = !!window.localStorage.getItem(LOCAL_STRAGE_KEY_FLAG_SUBMIT);
+    if(trueIfSubmit){
+      setWait(defaultWait);
+      window.localStorage.removeItem(LOCAL_STRAGE_KEY_FLAG_SUBMIT);
+    }
+  }
+
+  /**
+   * 行動ページで送信したらフラグを立てる
+   */
+  function setSubmitFlagTrueWhenAction(){
     // 行動ページじゃなければ抜ける
     if(!fullmember){return;}
 
     form.addEventListener("submit", e=>{
-      setWait(defaultWait);
+      // submitしたことを表すフラグを立てる
+      window.localStorage.setItem(LOCAL_STRAGE_KEY_FLAG_SUBMIT, "1");
     });
   }
 
