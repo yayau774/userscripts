@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        【童話画廊】画廊ロビー（各種行動）ページを改変するなど
 // @namespace    https://github.com/yayau774/userscripts
-// @version      0.4
+// @version      0.5
 // @description  ほかの改変とたぶん喧嘩する　プロフィールページで戦闘設定をキャッシュしたりもする
 // @author       Yayau
 // @match        http://soraniwa.428.st/fs/*
@@ -53,6 +53,11 @@
     for(let i of [2, 5]){
       e.querySelectorAll("span.status3")[i].insertAdjacentHTML("afterend", '<hr class="dashline">');
     }
+
+    // 能力合計を表示
+    const statsum = Array.from(e.querySelectorAll("span.status3")).reduce((sum, current) => sum + parseInt(current.textContent), 0);
+    const sumhtml = `<span class="markd marki1">合計</span><span class="status3">${statsum}</span>`;
+    e.querySelector("hr.dashline:nth-of-type(3)").insertAdjacentHTML("afterend", sumhtml);
 
     e.addEventListener('mouseenter', callbackShowStrategyButton);
     e.querySelector("img").closest("div").addEventListener('click', callbackShowStrategyButton);
