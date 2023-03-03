@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         【童話画廊】間違って突っ込みにくくするやつ
 // @namespace    https://github.com/yayau774/userscripts
-// @version      0.9
+// @version      0.10
 // @description  「5人そろってないときにsubmitを止める」「待ち時間を表示」
 // @author       Yayau
 // @match        http://soraniwa.428.st/fs/*
@@ -13,7 +13,7 @@
 
   // 基本的に何秒待たされるか　画廊ロビーで行動を送信した時にこの待ち時間を設定する
   // 待ち時間が緩和されたときはここをいじる
-  const defaultWait = 120;
+  const defaultWait = 60;
 
   ///////////////////////////////////////////////////
   // ここから下はいじってはいけない
