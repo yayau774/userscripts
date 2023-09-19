@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ごま学 - アイテムの一覧をソートした状態で表示
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  try to take over the world!
 // @author       You
 // @match        https://blacktea.sakura.ne.jp/GMA/_LOGIN/login.cgi
