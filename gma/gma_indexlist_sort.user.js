@@ -86,8 +86,8 @@
         break;
     }
 
-    // それでも同じだったら葬列スキルで比較
-    let skillCompare = a.skill - b.skill;
+    // それでも同じだったら葬列スキルで比較　日本語の文字列ソートなのでlocaleCompareを使う必要がある
+    let skillCompare = a.skill.localeCompare(b.skill);
     switch(true){
       case skillCompare < 0:
         return -1;
