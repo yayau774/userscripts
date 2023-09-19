@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         New Userscript
+// @name         ごま学 - アイテムの一覧をソートした状態で表示
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  try to take over the world!
