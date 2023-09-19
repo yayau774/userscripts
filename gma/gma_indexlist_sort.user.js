@@ -4,9 +4,8 @@
 // @version      0.1
 // @description  try to take over the world!
 // @author       You
-// @match        ここにurl
-// @icon         ここにicon
-// @grant        none
+// @match        https://blacktea.sakura.ne.jp/GMA/_LOGIN/login.cgi
+// @updateURL    https://github.com/yayau774/userscripts/raw/main/gma/gma_indexlist_sort.user.js
 // ==/UserScript==
 
 (function() {
