@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Supernal Blue 試遊会 / 戦闘設定画面に下書き窓を作る
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  titleが「戦闘設定」で始まっているページで動く
 // @author       Yayau
 // @match        https://soraniwa.428.st/sp/*
@@ -107,11 +107,7 @@
   }
   /**
    * 下書き窓
-   * メインで呼ぶのはaddDraftContainerだけ
-   * 
-   * todo:
-   *  addDraftContainer 本番はlengthとってrowを作る数を決める
-   *  createdraftdesc 反映ボタンの機能
+   * メインから呼ばれるのは addDraftContainer, addDraftShowButton
    */
   function addDraftContainer() {
     const parser = new DOMParser();
@@ -259,7 +255,7 @@
   function dzClick(e) {
     rowFill(this);
   }
-  /** draft内の反映ボタン todo/ぼたんに反映機能を持たせる */
+  /** draft内の反映ボタン */
   function finishDraft(e) {
     // 戦闘設定までスクロール
     document.querySelector("h4#section_skill").previousElementSibling.scrollIntoView({ behavior: "smooth" });
