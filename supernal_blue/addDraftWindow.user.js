@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Supernal Blue 試遊会 / 戦闘設定画面に下書き窓を作る
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.3
 // @description  titleが「戦闘設定」で始まっているページで動く
 // @author       Yayau
 // @match        https://soraniwa.428.st/sp/*
@@ -280,11 +280,13 @@
    */
   /** drag開始時、DataTransferに持たせるデータの成型につかう */
   function getSkillData(tr) {
+    const desc = tr.querySelector("td:nth-of-type(3) .skillhoverdesc").cloneNode(true);
+    desc.querySelector("small.c5").remove();
     return JSON.stringify({
       sno: tr.querySelector("td:first-child").getAttribute("data-sno"),
       shown: tr.querySelector("td:first-child").textContent.trim(),
       name: tr.querySelector("td:nth-of-type(2)").textContent.trim().split(" ").join("<br>"),
-      desc: tr.querySelector("td:nth-of-type(3) .skillhoverdesc").innerHTML.trim(),
+      desc: desc.innerHTML.trim(),
     });
   }
   /** dragover中につかう　いま持ち上げてるのはスキルデータあるやつかどうか？ */
