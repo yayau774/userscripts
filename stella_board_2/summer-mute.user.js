@@ -6,6 +6,7 @@
 // @version     1.0
 // @author      -
 // @description 2024/7/18 19:50:32
+// @updateURL   https://github.com/yayau774/userscripts/raw/main/stella_board_2/summer-mute.user.js
 // ==/UserScript==
 
 // ["eno", "eno", "eno", ...] という感じで複数入れる　半角数字
