@@ -4,9 +4,9 @@
 // @match       https://ermk.xsrv.jp/discovery.php
 // @match       https://ermk.xsrv.jp/map.php
 // @grant       none
-// @version     1.1
+// @version     1.2
 // @author      -
-// @description 2025/3/7 3:47:03
+// @description 2025/3/7 5:30:30
 // @updateURL   https://github.com/yayau774/userscripts/raw/main/sorenari/hideCompletedDunegons.user.js
 // ==/UserScript==
 
@@ -71,9 +71,13 @@ function addHiddenStyle(){
  */
 function hideCompletedDungeons(){
   const dungeons = load();
+  let count = 0;
   document.querySelectorAll("label").forEach(label => {
     if(dungeons.has(label.textContent)){
       label.closest("tr").style.display = "none";
+      count++;
     }
   })
+  console.log(`hidden dungeon: ${count}`);
+  
 }
