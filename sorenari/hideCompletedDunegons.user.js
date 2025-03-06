@@ -22,8 +22,8 @@ if(document.URL === UrlDiscovery){
 }
 
 if(document.URL === urlMove){
-  const dungeons = load();
-  console.log(dungeons);
+  addHiddenStyle();
+  hideCompletedDungeons()
 }
 
 
@@ -57,6 +57,23 @@ function findCompletedDungeons(){
   return [...dungeonSet.keys()];
 }
 
-function hideCompletedDungeons(){
+/**
+ * 隠蔽用スタイルの追加
+ */
+function addHiddenStyle(){
+  const style = document.createElement("style")
+  style.innerHTML = ".yy-hidden {display: none;}";
+  document.querySelector("head").insertAdjacentElement("beforeend", style);
+}
 
+/**
+ * 完了済みダンジョンを隠す
+ */
+function hideCompletedDungeons(){
+  const dungeons = load();
+  document.querySelectorAll("label").forEach(label => {
+    if(dungeons.has(label.textContent)){
+      label.closest("tr").style.display = "none";
+    }
+  })
 }
