@@ -7,7 +7,7 @@
 // @version     1.0
 // @author      -
 // @description 2025/3/7 3:47:03
-// @updateURL   https://github.com/yayau774/userscripts/raw/main/むにゃむにゃ
+// @updateURL   https://github.com/yayau774/userscripts/raw/main/sorenari/hideDestination.user.js
 // ==/UserScript==
 
 // ダンジョン名の配列JSONを置くLocalStorageのキー
