@@ -4,7 +4,7 @@
 // @match       https://ermk.xsrv.jp/discovery.php
 // @match       https://ermk.xsrv.jp/map.php
 // @grant       none
-// @version     1.0
+// @version     1.1
 // @author      -
 // @description 2025/3/7 3:47:03
 // @updateURL   https://github.com/yayau774/userscripts/raw/main/sorenari/hideCompletedDunegons.user.js
