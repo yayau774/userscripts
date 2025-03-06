@@ -7,7 +7,7 @@
 // @version     1.0
 // @author      -
 // @description 2025/3/7 3:47:03
-// @updateURL   https://github.com/yayau774/userscripts/raw/main/sorenari/hideDestination.user.js
+// @updateURL   https://github.com/yayau774/userscripts/raw/main/sorenari/hideCompletedDunegons.user.js
 // ==/UserScript==
 
 // ダンジョン名の配列JSONを置くLocalStorageのキー
@@ -18,7 +18,7 @@ const UrlDiscovery = "https://ermk.xsrv.jp/discovery.php";
 const urlMove = "https://ermk.xsrv.jp/map.php";
 
 if(document.URL === UrlDiscovery){
-  save(findCompletedMaps());
+  save(findCompletedDungeons());
 }
 
 if(document.URL === urlMove){
@@ -42,7 +42,7 @@ function load(){
 /**
  * 完了済みのダンジョン名を取得してArray<string>で返す　Discoveryのページでつかう
  */
-function findCompletedMaps(){
+function findCompletedDungeons(){
   const pickDungeon = /(.+)\s\d+\s\/\s\d+/;
   const dungeonSet = new Set()
   document.querySelectorAll("table#discoverylist tr").forEach(row => {
@@ -55,4 +55,8 @@ function findCompletedMaps(){
   })
 
   return [...dungeonSet.keys()];
+}
+
+function hideCompletedDungeons(){
+
 }
