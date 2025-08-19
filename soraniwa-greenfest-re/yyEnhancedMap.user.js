@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://soraniwa.428.st/gf/*
 // @grant       none
-// @version     1.2
+// @version     1.3
 // @author      -
 // @description 2025/8/18 3:47:03
 // @updateURL   https://github.com/yayau774/userscripts/raw/main/soraniwa-greenfest-re/yyEnhancedMap.user.js
@@ -43,7 +43,7 @@
   }
 
   // configのロード
-  const config = YyLocalStorage.config.load();
+  let config = YyLocalStorage.config.load();
   /**
    * どんなオプションをつけるかって話よ
    * isAutoMuteEnabled: boolean　行動画面開いたときにiconmuteを押すかどうか
@@ -69,6 +69,9 @@
   if(config.isAutoMuteEnabled){
      $("#iconmute").trigger('click');
   }
+
+  // configを開いたりするボタンを設置
+  appendDialog();
 
   //  ajax終了時にもろもろの処理を行う　おそらくマップ表示のときになるはず
   $(document).ajaxComplete((event, xhr, settings) => {
@@ -104,8 +107,9 @@
 
     // 周辺地図の外延部のうち、全体マップにのっていないものが一つでもあれば登録
     // 地形変更に対応できてないのでどうにかせよ　負荷高くない？　はい
+    // configを見て全体マップの登録がonでなければ触らないぞ
     const edge = [...localMap.values()].filter(cell => cell.isEdge)
-    if(!edge.every(edge => worldmap.has(edge.coor))){
+    if(config.isWorldmapSaveEnabled && !edge.every(edge => worldmap.has(edge.coor))){
       // 別タブを警戒しての手間
       worldmap = YyLocalStorage.worldmap.load();
       localMap.forEach(cell => worldmap.set(cell.coor, {colorCode: cell.colorCode, terrain: cell.terrain, isShining: cell.isShining}))
@@ -136,28 +140,6 @@
       })
       cell.dom.style.cursor = "help";
     })
-
-    // 探索済み地点の表示を変更する。きらきらは暗い色へ。
-    /*
-    searched.forEach(coor => {
-      if(!localMap.has(coor)){ return; }
-      const cell = localMap.get(coor);
-      cell.dom.addEventListener("click", e => {
-        alert(`探索リスト\n\n${droplist.get(coor).join("\n")}`)
-      })
-      cell.dom.style.cursor = "help";
-
-      // きらきらは暗い色、探索済みはチェックマーク
-      if(cell.isShining){
-        cell.dom.querySelector("span").style.color = "purple"
-      }else{
-        cell.dom.innerText = "✔"
-      }
-    })
-    */
-
-
-
 
 
   });
@@ -272,38 +254,40 @@
     }
   }
 
-  function appendDialog(config){
+  /** <dialog>を利用してconfigなどを設定できるようにする */
+  function appendDialog(){
     const dialog = document.createElement("dialog")
     dialog.id = "yy-dialog";
     dialog.innerHTML = `
-    <h3>config</h3>
+    <h3>yy-Enhanced-Map config</h3>
     <form id="yy-config" method="dialog">
     <label>
-      <input type="checkbox" name="isAutoMuteEnabled" ${config.isAutoMuteEnabled ? checked : ""}>
+      <input type="checkbox" name="isAutoMuteEnabled" ${config.isAutoMuteEnabled ? "checked" : ""}>
       行動画面を開いたときに自動で「アイコンを隠す」ボタンを押す
     </label><br>
     <label>
-      <input type="checkbox" name="isWorldmapSaveEnabled" ${config.isWorldmapSaveEnabled ? checked : ""}>
+      <input type="checkbox" name="isWorldmapSaveEnabled" ${config.isWorldmapSaveEnabled ? "checked" : ""}>
       周辺地図を全体マップに取り込むかどうか
     </label><br>
     <button type="submit">決定</button>
     </form>
     `
+    // ダイアログフォームのsubmitに版のしてconfigを保存
     dialog.addEventListener("submit", e => {
       const fd = new FormData(e.target)
-      const obj = {}
+      config = {}
       fd.entries().forEach(([k, v]) => {
-        obj[k] = v;
+        config[k] = v;
       })
-      console.log(obj)
+      YyLocalStorage.config.save(config)
     })
 
     const dialogButton = document.createElement("button")
-    dialogButton.textContent = "show dialog"
+    dialogButton.textContent = "yy-Enhanced-Map"
     dialogButton.addEventListener("click", e => {
       dialog.showModal()
     })
-    document.body.appendChild(dialogButton)
+    document.querySelector("#btn6").insertAdjacentElement("afterend", dialogButton)
     document.body.appendChild(dialog)
   }
 
