@@ -48,8 +48,6 @@
    * どんなオプションをつけるかって話よ
    * isAutoMuteEnabled: boolean　行動画面開いたときにiconmuteを押すかどうか
    * isWorldmapSaveEnabled: boolean　周辺地図を全体マップに新たに取り込むかどうか　負荷がかかりそうだから……
-   * isSearchedSaveEnabled: boolean　探索済み座標を新たに保存するかどうか
-   * isDroplistSaveEnabled: boolean　ドロップリストを新たに保存するかどうか
    * 
    * showUploadButton: boolean　外部のサーバにデータを上げるボタンをつけるかどうか
    * isAutomateEnabled: boolean　そしてアップロードを自動化するかどうか
@@ -282,6 +280,7 @@
       YyLocalStorage.config.save(config)
     })
 
+    // dialogとかのDOMを設置したり
     const dialogButton = document.createElement("button")
     dialogButton.textContent = "yy-Enhanced-Map"
     dialogButton.addEventListener("click", e => {
