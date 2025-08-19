@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://soraniwa.428.st/gf/*
 // @grant       none
-// @version     1.1
+// @version     1.2
 // @author      -
 // @description 2025/8/18 3:47:03
 // @updateURL   https://github.com/yayau774/userscripts/raw/main/soraniwa-greenfest-re/yyEnhancedMap.user.js
