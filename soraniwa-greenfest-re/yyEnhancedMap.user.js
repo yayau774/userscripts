@@ -3,10 +3,10 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://soraniwa.428.st/gf/*
 // @grant       none
-// @version     1.0
+// @version     1.1
 // @author      -
 // @description 2025/8/18 3:47:03
-// @updateURL   https://github.com/yayau774/userscripts/raw/main/むにゃむにゃ
+// @updateURL   https://github.com/yayau774/userscripts/raw/main/soraniwa-greenfest-re/yyEnhancedMap.user.js
 // ==/UserScript==
 
 // 実際の処理はここから
