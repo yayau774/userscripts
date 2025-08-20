@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://soraniwa.428.st/gf/*
 // @grant       none
-// @version     1.3
+// @version     1.4
 // @author      -
 // @description 2025/8/18 3:47:03
 // @updateURL   https://github.com/yayau774/userscripts/raw/main/soraniwa-greenfest-re/yyEnhancedMap.user.js
@@ -32,7 +32,19 @@
       remove: () => window.localStorage.removeItem("yy-emap-droplist"),
       save: (data) => window.localStorage.setItem("yy-emap-droplist", JSON.stringify([...data])),
       load: () => new Map(JSON.parse(window.localStorage.getItem("yy-emap-droplist"))),
-      /** Map<"x,y", string[]> */
+      /** 旧バージョン Map<"x,y", string[]> */
+    },
+    droplistK: {
+      remove: () => window.localStorage.removeItem("yy-emap-droplist-k"),
+      save: (data) => window.localStorage.setItem("yy-emap-droplist-k", JSON.stringify([...data])),
+      load: () => new Map(JSON.parse(window.localStorage.getItem("yy-emap-droplist-k"))),
+      /** Known 新バージョン Map<"x,y", [timestamp(number), string[]]>  */
+    },
+    droplistU: {
+      remove: () => window.localStorage.removeItem("yy-emap-droplist-u"),
+      save: (data) => window.localStorage.setItem("yy-emap-droplist-u", JSON.stringify([...data])),
+      load: () => new Map(JSON.parse(window.localStorage.getItem("yy-emap-droplist-u"))),
+      /** Unknown 新バージョン Map<"x,y", [timestamp(number), string[]]>  */
     },
     worldmap: {
       remove: () => window.localStorage.removeItem("yy-emap-worldmap"),
@@ -60,8 +72,14 @@
 
   // localStorageからのロード
   let searched = YyLocalStorage.searched.load();
-  let droplist = YyLocalStorage.droplist.load();
+  let droplistK = YyLocalStorage.droplistK.load();
+  let droplistU = YyLocalStorage.droplistU.load();
   let worldmap = YyLocalStorage.worldmap.load();
+
+  // droplist問題
+  if(droplistK.size + droplistU.size === 0){
+    droplistRenewal();
+  }
 
   // ミュートボタンを押す
   if(config.isAutoMuteEnabled){
@@ -76,7 +94,7 @@
     // 動いてるか確認する
     //console.log('Ajax 完了:', settings.url, xhr.status);
     const json = JSON.parse(xhr.responseText);
-    console.log("json", json)
+    //console.log("json", json)
 
     // 地図情報が送られてきてるわけじゃないならやめる
     if(json.maptipname === undefined){ return; }
@@ -95,12 +113,30 @@
     }
 
     // ドロップリストが存在しないor探索済みの地点ならドロップリストへの登録
+    // todo 変えろ　droplistK/Uのタイムスタンプを見て処理
+    /*
     if(!droplist.get(selfInfo.coor) || selfInfo.isSearched){
       // 別タブを警戒してのちょっとした手間
       droplist = YyLocalStorage.droplist.load();
       droplist.set(selfInfo.coor, selfInfo.droplist)
       YyLocalStorage.droplist.save(droplist)
       console.log(`ここのドロップリストを取得: ${selfInfo.coor} (${selfInfo.droplist[0]}、ほか)`);
+    }
+    */
+    // ドロップリストの更新をする　タイムスタンプにエポック分を使う
+    const timestamp = Math.floor(Date.now() / 60000)
+    if(isUnknownDroplist(selfInfo.droplist)){
+      // 現在地のドロップリストに未判明素材があるとき
+      droplistU = YyLocalStorage.droplistU.load();
+      droplistU.set(selfInfo.coor, [timestamp, selfInfo.droplist])
+      YyLocalStorage.droplistU.save(droplistU)
+      console.log(`ドロップリスト(未判明)に登録: ${selfInfo.coor} (${selfInfo.droplist[0]}、ほか)`);
+    }else{
+      // 未判明素材がないならKnownなドロップリスト
+      droplistK = YyLocalStorage.droplistK.load();
+      droplistK.set(selfInfo.coor, [timestamp, selfInfo.droplist])
+      YyLocalStorage.droplistK.save(droplistK)
+      console.log(`ドロップリスト(判明済み)に登録: ${selfInfo.coor} (${selfInfo.droplist[0]}、ほか)`);
     }
 
     // 周辺地図の外延部のうち、全体マップにのっていないものが一つでもあれば登録
@@ -124,9 +160,12 @@
         }else{
           cell.dom.innerText = "✔"
         }
-      }else if(droplist.has(coor)){
-        // ドロップリストにある？　使用アイテムを含むなら●、そうでないなら〇
-        cell.dom.innerText = droplist.get(coor).includes("使用アイテム") ? "●" : "〇"
+      }else if(droplistU.has(coor)){
+        // 未判明ドロップリストにある？　使用アイテムを含むなら●、そうでないなら〇
+        cell.dom.innerText = droplistU.get(coor)?.[1].includes("使用アイテム") ? "●" : "〇"
+      }else if(droplistK.has(coor)){
+        // todo 判明済みで使用アイテムのものをどうする？
+        cell.dom.innerText = droplistU.get(coor)?.[1].includes("使用アイテム") ? "★" : "☆"
       }else{
         // 探索済みでないうえにドロップリストにもないならここで終わる
         return;
@@ -134,7 +173,12 @@
 
       // クリックしたらアイテムを表示するように
       cell.dom.addEventListener("click", e => {
-        alert(`探索リスト(${coor})\n\n${droplist.get(coor).join("\n")}`)
+        const k = droplistK.get(coor)
+        const u = droplistU.get(coor)
+        const timestamp = (t) => new Date(t*60000).toLocaleString("ja-JP");
+        const known = k ? `判明済みでの登録日時 (${timestamp(k[0])}) \n ${k[1].join("\n")}` : "判明済みでの登録なし";
+        const unknown = u ? `未判明での登録日時 (${timestamp(u[0])}) \n ${u[1].join("\n")}` : "未判明での登録なし";
+        alert(`探索リスト(${coor})\n\n${known}\n\n${unknown}`)
       })
       cell.dom.style.cursor = "help";
     })
@@ -254,6 +298,10 @@
 
   /** <dialog>を利用してconfigなどを設定できるようにする */
   function appendDialog(){
+    // ボタンをつける場所の基準になるボタン6を探す
+    const btn6 = document.querySelector("#btn6");
+    if(!btn6){ return; }
+
     const dialog = document.createElement("dialog")
     dialog.id = "yy-dialog";
     dialog.innerHTML = `
@@ -286,8 +334,33 @@
     dialogButton.addEventListener("click", e => {
       dialog.showModal()
     })
-    document.querySelector("#btn6").insertAdjacentElement("afterend", dialogButton)
+    btn6.insertAdjacentElement("afterend", dialogButton)
     document.body.appendChild(dialog)
+  }
+
+  /** 仕様変更にともなうdroplistの改造 */
+  function droplistRenewal(){
+    // サイズ0なら処理は不要
+    const droplist = YyLocalStorage.droplist.load();
+    if(droplist.size == 0){ return; }
+
+    // droplistをひとつずつ見てknown/unknownに振り分ける　このときタイムスタンプは0にする
+    [...droplist.entries()].forEach(([coor, drops]) => {
+      if(isUnknownDroplist(drops)){
+        droplistU.set(coor, [0, drops])
+      }else{
+        droplistK.set(coor, [0, drops])
+      }
+    })
+
+    YyLocalStorage.droplistK.save(droplistK)
+    YyLocalStorage.droplistU.save(droplistU)
+  }
+
+  /** 与えられた配列に一つでも未判明の代替名が入っていればunknown扱いだぞ */
+  function isUnknownDroplist(drops){
+    const listOfUnknown = ["素材アイテム", "食べ物アイテム", "花の種アイテム", "使用アイテム", "条件アイテム"]
+    return drops.some(drop => listOfUnknown.includes(drop))
   }
 
 })();
