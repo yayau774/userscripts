@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://soraniwa.428.st/gf/*
 // @grant       none
-// @version     1.4
+// @version     1.5
 // @author      -
 // @description 2025/8/18 3:47:03
 // @updateURL   https://github.com/yayau774/userscripts/raw/main/soraniwa-greenfest-re/yyEnhancedMap.user.js
@@ -58,13 +58,15 @@
   let config = YyLocalStorage.config.load();
   /**
    * どんなオプションをつけるかって話よ
-   * isAutoMuteEnabled: boolean　行動画面開いたときにiconmuteを押すかどうか
+   * isAutoMuteEnabled: boolean　行動画面開いたときにiconmuteを押すかどうか　いらなくなった
    * isWorldmapSaveEnabled: boolean　周辺地図を全体マップに新たに取り込むかどうか　負荷がかかりそうだから……
    * 
    * showUploadButton: boolean　外部のサーバにデータを上げるボタンをつけるかどうか
    * isAutomateEnabled: boolean　そしてアップロードを自動化するかどうか
    * 
    * showFetchButton: boolean　外部のサーバーからダウンロードするボタンをつけるかどうか
+   * 
+   * ボタンをつけるかどうか聞かなくてよくない？　ボタンを押すかどうかはユーザーが都度決めることだ
    * 
    * 各種LocalStorage情報はオプション画面から消せるようにしておきたい
    * オプション画面作るのめんどくさいよーーーーっ　だだをこねるな
@@ -81,10 +83,8 @@
     droplistRenewal();
   }
 
-  // ミュートボタンを押す
-  if(config.isAutoMuteEnabled){
-     $("#iconmute").trigger('click');
-  }
+  // ミュートボタンを押す必要はもうない　なぜなら公式で対応してくれたから
+  //if(config.isAutoMuteEnabled){ $("#iconmute").trigger('click'); }
 
   // configを開いたりするボタンを設置
   appendDialog();
@@ -307,10 +307,6 @@
     dialog.innerHTML = `
     <h3>yy-Enhanced-Map config</h3>
     <form id="yy-config" method="dialog">
-    <label>
-      <input type="checkbox" name="isAutoMuteEnabled" ${config.isAutoMuteEnabled ? "checked" : ""}>
-      行動画面を開いたときに自動で「アイコンを隠す」ボタンを押す
-    </label><br>
     <label>
       <input type="checkbox" name="isWorldmapSaveEnabled" ${config.isWorldmapSaveEnabled ? "checked" : ""}>
       周辺地図を全体マップに取り込むかどうか
