@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://soraniwa.428.st/gf/*
 // @grant       none
-// @version     1.5
+// @version     2.0
 // @author      -
 // @description 2025/8/18 3:47:03
 // @updateURL   https://github.com/yayau774/userscripts/raw/main/soraniwa-greenfest-re/yyEnhancedMap.user.js
@@ -38,35 +38,38 @@
       remove: () => window.localStorage.removeItem("yy-emap-droplist-k"),
       save: (data) => window.localStorage.setItem("yy-emap-droplist-k", JSON.stringify([...data])),
       load: () => new Map(JSON.parse(window.localStorage.getItem("yy-emap-droplist-k"))),
+      get: () => window.localStorage.getItem("yy-emap-droplist-k"),
       /** Known 新バージョン Map<"x,y", [timestamp(number), string[]]>  */
     },
     droplistU: {
       remove: () => window.localStorage.removeItem("yy-emap-droplist-u"),
       save: (data) => window.localStorage.setItem("yy-emap-droplist-u", JSON.stringify([...data])),
       load: () => new Map(JSON.parse(window.localStorage.getItem("yy-emap-droplist-u"))),
+      get: () => window.localStorage.getItem("yy-emap-droplist-u"),
       /** Unknown 新バージョン Map<"x,y", [timestamp(number), string[]]>  */
     },
     worldmap: {
       remove: () => window.localStorage.removeItem("yy-emap-worldmap"),
       save: (data) => window.localStorage.setItem("yy-emap-worldmap", JSON.stringify([...data])),
       load: () => new Map(JSON.parse(window.localStorage.getItem("yy-emap-worldmap"))),
+      get: () => window.localStorage.getItem("yy-emap-worldmap"),
       /** Map<"x,y", {colorCode:string, terrain:string, isShining:boolean} */
     },
   }
 
   // configのロード
+  /**
+   * config
+   * @type {{ isWorldmapSaveEnabled?: boolean, isDroplistUSaveEnabled?: boolean, isDroplistKSaveEnabled?: boolean }}
+   */
   let config = YyLocalStorage.config.load();
   /**
    * どんなオプションをつけるかって話よ
    * isAutoMuteEnabled: boolean　行動画面開いたときにiconmuteを押すかどうか　いらなくなった
    * isWorldmapSaveEnabled: boolean　周辺地図を全体マップに新たに取り込むかどうか　負荷がかかりそうだから……
+   * isDroplistUSaveEnabled: boolean
+   * isDroplistKSaveEnabled: boolean ドロップリストU/Kを保存するかどうか
    * 
-   * showUploadButton: boolean　外部のサーバにデータを上げるボタンをつけるかどうか
-   * isAutomateEnabled: boolean　そしてアップロードを自動化するかどうか
-   * 
-   * showFetchButton: boolean　外部のサーバーからダウンロードするボタンをつけるかどうか
-   * 
-   * ボタンをつけるかどうか聞かなくてよくない？　ボタンを押すかどうかはユーザーが都度決めることだ
    * 
    * 各種LocalStorage情報はオプション画面から消せるようにしておきたい
    * オプション画面作るのめんどくさいよーーーーっ　だだをこねるな
@@ -78,7 +81,7 @@
   let droplistU = YyLocalStorage.droplistU.load();
   let worldmap = YyLocalStorage.worldmap.load();
 
-  // droplist問題
+  // droplist引継ぎ
   if(droplistK.size + droplistU.size === 0){
     droplistRenewal();
   }
@@ -125,14 +128,14 @@
     */
     // ドロップリストの更新をする　タイムスタンプにエポック分を使う
     const timestamp = Math.floor(Date.now() / 60000)
-    if(isUnknownDroplist(selfInfo.droplist)){
+    if(config.isDroplistUSaveEnabled && isUnknownDroplist(selfInfo.droplist)){
       // 現在地のドロップリストに未判明素材があるとき
       droplistU = YyLocalStorage.droplistU.load();
       droplistU.set(selfInfo.coor, [timestamp, selfInfo.droplist])
       YyLocalStorage.droplistU.save(droplistU)
       console.log(`ドロップリスト(未判明)に登録: ${selfInfo.coor} (${selfInfo.droplist[0]}、ほか)`);
-    }else{
-      // 未判明素材がないならKnownなドロップリスト
+    }else if(config.isDroplistKSaveEnabled ){
+      // 未判明素材がないならKnownなドロップリストへ
       droplistK = YyLocalStorage.droplistK.load();
       droplistK.set(selfInfo.coor, [timestamp, selfInfo.droplist])
       YyLocalStorage.droplistK.save(droplistK)
@@ -311,8 +314,30 @@
       <input type="checkbox" name="isWorldmapSaveEnabled" ${config.isWorldmapSaveEnabled ? "checked" : ""}>
       周辺地図を全体マップに取り込むかどうか
     </label><br>
+    <label>
+      <input type="checkbox" name="isDroplistUSaveEnabled" ${config.isDroplistUSaveEnabled ? "checked" : ""}>
+      現在地に未判明の探索アイテム（花の種アイテムなど）があるときに記録するかどうか
+    </label><br>
+    <label>
+      <input type="checkbox" name="isDroplistKSaveEnabled" ${config.isDroplistKSaveEnabled ? "checked" : ""}>
+      現在地に判明済みの探索アイテム（○○の種など）があるときに記録するかどうか
+    </label><br>
     <button type="submit">決定</button>
     </form>
+    <h3>API</h3>
+    <div>
+      ボタン押したらアラートが出るまで待ってほしい（ローディングを作るのが手間）<br>
+      <br>
+      <button id="yy-receiveWorldmap">全体マップのデータを受け取る</button><br>
+      <button id="yy-receiveDroplist">各地の未判明/判明済み探索データを受け取る</button><br>
+      <br>
+      処理の都合上、全体マップのデータを送信してからじゃないと失敗することがある……。<br>
+      <button id="yy-sendWorldmap">全体マップのデータを送信する</button><br>
+      <button id="yy-sendUnknown">各地の未判明探索データを送信する</button><br>
+      <button id="yy-sendKnown">各地の判明済み探索データを送信する</button><br>
+    </div>
+    <hr>
+    <button id="yy-closeDialog">とじる</button>
     `
     // ダイアログフォームのsubmitに版のしてconfigを保存
     dialog.addEventListener("submit", e => {
@@ -322,6 +347,63 @@
         config[k] = v;
       })
       YyLocalStorage.config.save(config)
+    })
+
+    // とじる
+    dialog.querySelector("#yy-closeDialog").addEventListener("click", e => {
+      dialog.close()
+    })
+
+    /** fetch簡略化 */
+    //const apiUrl = "http://localhost:5173/api"
+    const apiUrl = "https://soraniwa-gf-re-tool.yayau4dev.workers.dev/api"
+    const getFn = async (path) => {
+      return await fetch(apiUrl + path).then(r => r.json())
+    }
+    const postFn = async (path, body) => {
+      return await fetch(apiUrl + path, {
+        method: "post",
+        headers: { "Content-type": "application/json" },
+        body
+      })
+      .then(r => r.text())
+      .catch(e => e)
+    }
+
+
+    // 受信系　受け取ってまーーーーーじ
+    dialog.querySelector("#yy-receiveWorldmap").addEventListener("click", async (e) => {
+      const wm = await getFn("/worldmap")
+      worldmap = YyLocalStorage.worldmap.load()
+      wm.forEach(([key, val]) => worldmap.set(key, val))
+      YyLocalStorage.worldmap.save(worldmap)
+      alert(`${wm.length}件の情報を受け取り、現在${worldmap.size}地点の全体マップ情報を持っています。`)
+    })
+    dialog.querySelector("#yy-receiveDroplist").addEventListener("click", async (e) => {
+      const {known, unknown} = await getFn("/droplist")
+      droplistK = YyLocalStorage.droplistK.load()
+      known.forEach(([key, val]) => droplistK.set(key, val));
+      YyLocalStorage.droplistK.save(droplistK)
+
+      droplistU = YyLocalStorage.droplistU.load()
+      unknown.forEach(([key, val]) => droplistU.set(key, val));
+      YyLocalStorage.droplistU.save(droplistU)
+
+      alert(`判明済み${known.length}件、未判明${unknown.length}件の情報を受け取り、\nそれぞれ現在${droplistK.size}件、${droplistU.size}件の情報を持っています。`)
+    })
+
+    // 送信系
+    dialog.querySelector("#yy-sendWorldmap").addEventListener("click", async (e) => {
+      const result = await postFn("/worldmap", YyLocalStorage.worldmap.get())
+      alert(result)
+    })
+    dialog.querySelector("#yy-sendKnown").addEventListener("click", async (e) => {
+      const result = await postFn("/droplist/known", YyLocalStorage.droplistK.get());
+      alert(result)
+    })
+    dialog.querySelector("#yy-sendUnknown").addEventListener("click", async (e) => {
+      const result = await postFn("/droplist/unknown", YyLocalStorage.droplistU.get());
+      alert(result)
     })
 
     // dialogとかのDOMを設置したり
