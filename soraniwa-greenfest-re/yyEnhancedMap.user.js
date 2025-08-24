@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://soraniwa.428.st/gf/*
 // @grant       none
-// @version     2.0
+// @version     2.1
 // @author      -
 // @description 2025/8/18 3:47:03
 // @updateURL   https://github.com/yayau774/userscripts/raw/main/soraniwa-greenfest-re/yyEnhancedMap.user.js
@@ -163,6 +163,8 @@
         }else{
           cell.dom.innerText = "✔"
         }
+      }else if(cell.isShining){
+        // 未探索のきらきらはなにもしない
       }else if(droplistU.has(coor)){
         // 未判明ドロップリストにある？　使用アイテムを含むなら●、そうでないなら〇
         cell.dom.innerText = droplistU.get(coor)?.[1].includes("使用アイテム") ? "●" : "〇"
