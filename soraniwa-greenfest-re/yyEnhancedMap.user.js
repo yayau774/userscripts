@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://soraniwa.428.st/gf/*
 // @grant       none
-// @version     2.1
+// @version     2.2
 // @author      -
 // @description 2025/8/18 3:47:03
 // @updateURL   https://github.com/yayau774/userscripts/raw/main/soraniwa-greenfest-re/yyEnhancedMap.user.js
@@ -60,13 +60,19 @@
   // configのロード
   /**
    * config
-   * @type {{ isWorldmapSaveEnabled?: boolean, isDroplistUSaveEnabled?: boolean, isDroplistKSaveEnabled?: boolean }}
+   * @type {{   
+   *   isWorldmapSaveEnabled?: boolean;  
+   *   isWorldmapSaveForced?:  boolean;
+   *   isDroplistUSaveEnabled?: boolean;  
+   *   isDroplistKSaveEnabled?: boolean;  
+   * }}
    */
   let config = YyLocalStorage.config.load();
   /**
    * どんなオプションをつけるかって話よ
    * isAutoMuteEnabled: boolean　行動画面開いたときにiconmuteを押すかどうか　いらなくなった
    * isWorldmapSaveEnabled: boolean　周辺地図を全体マップに新たに取り込むかどうか　負荷がかかりそうだから……
+   * isWorldmapSaveForced:  boolean  常に周辺地図を全体マップに取り込む　これがオフなら周縁部が初見の時だけ　地形変更に対応するためのオプション
    * isDroplistUSaveEnabled: boolean
    * isDroplistKSaveEnabled: boolean ドロップリストU/Kを保存するかどうか
    * 
@@ -143,10 +149,13 @@
     }
 
     // 周辺地図の外延部のうち、全体マップにのっていないものが一つでもあれば登録
-    // 地形変更に対応できてないのでどうにかせよ　負荷高くない？　はい
     // configを見て全体マップの登録がonでなければ触らないぞ
+    // config.isWorldmaSaveForcedがonなら既知のマスでも登録する
     const edge = [...localMap.values()].filter(cell => cell.isEdge)
-    if(config.isWorldmapSaveEnabled && !edge.every(edge => worldmap.has(edge.coor))){
+    if(
+      config.isWorldmapSaveEnabled
+      && (config.isWorldmapSaveForced || !edge.every(edge => worldmap.has(edge.coor)))
+    ){
       // 別タブを警戒しての手間
       worldmap = YyLocalStorage.worldmap.load();
       localMap.forEach(cell => worldmap.set(cell.coor, {colorCode: cell.colorCode, terrain: cell.terrain, isShining: cell.isShining}))
@@ -155,6 +164,7 @@
     }
 
     // 周辺地図への書き込みを行う。探索済みとかそういうやつ。
+    // todo 探索済みフラグは公式で用意されたがまだ不安定なので、公式が安定したら調整する
     localMap.forEach((cell, coor) => {
       if(searched.has(coor)){
         // 探索済み？　→　きらきらなら色を変える、そうでないならチェックマーク
@@ -317,6 +327,10 @@
       周辺地図を全体マップに取り込むかどうか
     </label><br>
     <label>
+      <input type="checkbox" name="isWorldmapSaveForced" ${config.isWorldmapSaveForced ? "checked" : ""}>
+      上のオプションがonのとき、未知のマスがなくても地図を取り込むかどうか
+    </label><br>
+    <label>
       <input type="checkbox" name="isDroplistUSaveEnabled" ${config.isDroplistUSaveEnabled ? "checked" : ""}>
       現在地に未判明の探索アイテム（花の種アイテムなど）があるときに記録するかどうか
     </label><br>
@@ -326,6 +340,10 @@
     </label><br>
     <button type="submit">決定</button>
     </form>
+    <h3>Link</h3>
+    <div>
+      <a href="https://soraniwa-gf-re-tool.yayau4dev.workers.dev/worldmap">worldmap</a>
+    </div>
     <h3>API</h3>
     <div>
       ボタン押したらアラートが出るまで待ってほしい（ローディングを作るのが手間）<br>
