@@ -79,7 +79,7 @@
    * 
    * 各種LocalStorage情報はオプション画面から消せるようにしておきたい
    * オプション画面作るのめんどくさいよーーーーっ　だだをこねるな
-   */
+  */
 
   // localStorageからのロード
   let searched = YyLocalStorage.searched.load();
@@ -119,6 +119,15 @@
       searched.add(selfInfo.coor)
       YyLocalStorage.searched.save(searched);
       console.log(`ここを探索済みと判定する: ${selfInfo.coor}`);
+    }
+    // 周辺地図の探索済みフラグを見て探索済みリストに追加（探索時にusが動いてなかった場合に必要）
+    const searchedInLocalMap = [...localMap.values()].filter(cell => cell.isSearched)
+    if(searchedInLocalMap.some(cell => !searched.has(cell.coor))){
+      searchedInLocalMap.forEach(cell => 
+        searched.add(cell.coor)
+      )
+      YyLocalStorage.searched.save(searched)
+      console.log(`探索済み地点を周辺地図から記録`)
     }
 
     // ドロップリストが存在しないor探索済みの地点ならドロップリストへの登録
@@ -209,6 +218,8 @@
    * 自分が画面端にいるときの挙動は不明なので、spanが15x15=225と一致するときだけ処理をする　ひとまずはそれが安牌かな
    * 返り値はMap<座標, {土地データ}>　DOMとかisEdge(外縁部かどうか)とかの保存しなくていいデータもある
    * 保存対象は座標
+   * 
+   * isShiningはもうあんまり役に立たない　探索済みの旗が立ってたらきらきらが表示されないので
    */
   // 　
   function getLocalMap(json){
@@ -226,6 +237,7 @@
           dom: cellSpans[idx],
           isEdge: Math.abs(y)==7 || Math.abs(x)==7,
           isShining: cellSpans[idx].querySelector("span") != null,
+          isSearched: cellSpans[idx].querySelector("i.ri-flag-2-fill") != null,
         };
         localmap.set(celldata.coor, celldata)
         idx++;
