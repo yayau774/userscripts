@@ -3,9 +3,9 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://soraniwa.428.st/gf/*
 // @grant       none
-// @version     2.3
+// @version     2.4
 // @author      -
-// @description 2025/8/18 3:47:03
+// @description 2025/09/29 判明済みの地点において、力のかけらは★、それ以外は▲と表示するように
 // @updateURL   https://github.com/yayau774/userscripts/raw/main/soraniwa-greenfest-re/yyEnhancedMap.user.js
 // ==/UserScript==
 
@@ -173,26 +173,26 @@
     }
 
     // 周辺地図への書き込みを行う。探索済みとかそういうやつ。
-    // todo 探索済みフラグは公式で用意されたがまだ不安定なので、公式が安定したら調整する
     localMap.forEach((cell, coor) => {
-      if(searched.has(coor)){
-        // 探索済み？　→　きらきらなら色を変える、そうでないならチェックマーク
-        if(cell.isShining){
-          cell.dom.querySelector("span").style.color = "purple"
-        }else{
-          cell.dom.innerText = "✔"
-        }
-      }else if(cell.isShining){
-        // 未探索のきらきらはなにもしない
-      }else if(droplistU.has(coor)){
-        // 未判明ドロップリストにある？　使用アイテムを含むなら●、そうでないなら〇
-        cell.dom.innerText = droplistU.get(coor)?.[1].includes("使用アイテム") ? "●" : "〇"
-      }else if(droplistK.has(coor)){
-        // todo 判明済みで使用アイテムのものをどうする？
-        cell.dom.innerText = droplistU.get(coor)?.[1].includes("使用アイテム") ? "★" : "☆"
-      }else{
-        // 探索済みでないうえにドロップリストにもないならここで終わる
+      // 判明済み・未判明のリストに存在しないならなにもしないで帰る
+      if(!droplistK.has(coor) && !droplistU.has(coor)){
         return;
+      }
+
+      // セル表記の変更　旗やキラキラのないところだけ編集する
+      if(!cell.isSearched && !cell.isShining){
+        if(droplistK.has(coor)){
+          //  かけらが含まれるなら★、それ以外の判明済み使用アイテムなら▲
+          cell.dom.innerText = droplistK.get(coor)?.[1].some(drop => drop.startsWith("力のかけら")) ? "★" : "▲"
+        }else if(droplistU.has(coor)){
+          //  未判明で使用アイテムが含まれるなら●、そうでないなら〇
+          cell.dom.innerText = droplistU.get(coor)?.[1].includes("使用アイテム") ? "●" : "〇"
+        }
+      }
+      
+      // なんか記号をいっぱいつけてある状態だと旗の白が目に痛いから色変えるね……
+      if(cell.isSearched){
+        cell.dom.querySelector("i").style.color = "purple"
       }
 
       // クリックしたらアイテムを表示するように
