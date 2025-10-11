@@ -3,9 +3,9 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://soraniwa.428.st/gf/*
 // @grant       none
-// @version     2.4
+// @version     2.5
 // @author      -
-// @description 2025/09/29 判明済みの地点において、力のかけらは★、それ以外は▲と表示するように
+// @description 2025/10/12 y軸画面端の挙動、自分の位置を「自」に
 // @updateURL   https://github.com/yayau774/userscripts/raw/main/soraniwa-greenfest-re/yyEnhancedMap.user.js
 // ==/UserScript==
 
@@ -70,7 +70,6 @@
   let config = YyLocalStorage.config.load();
   /**
    * どんなオプションをつけるかって話よ
-   * isAutoMuteEnabled: boolean　行動画面開いたときにiconmuteを押すかどうか　いらなくなった
    * isWorldmapSaveEnabled: boolean　周辺地図を全体マップに新たに取り込むかどうか　負荷がかかりそうだから……
    * isWorldmapSaveForced:  boolean  常に周辺地図を全体マップに取り込む　これがオフなら周縁部が初見の時だけ　地形変更に対応するためのオプション
    * isDroplistUSaveEnabled: boolean
@@ -92,9 +91,6 @@
     droplistRenewal();
   }
 
-  // ミュートボタンを押す必要はもうない　なぜなら公式で対応してくれたから
-  //if(config.isAutoMuteEnabled){ $("#iconmute").trigger('click'); }
-
   // configを開いたりするボタンを設置
   appendDialog();
 
@@ -110,7 +106,7 @@
 
     // JSONから情報を取得
     const selfInfo = getSelfInfo(json)
-    const localMap = getLocalMap(json)
+    const localMap = getLocalMap(json, selfInfo)
 
     // 現在地が探索済み、なおかつ探索済み地点リストに現在地の座標がないとき、現在地を探索済みとして追加する
     if(selfInfo.isSearched && !searched.has(selfInfo.coor)){
@@ -130,17 +126,6 @@
       console.log(`探索済み地点を周辺地図から記録`)
     }
 
-    // ドロップリストが存在しないor探索済みの地点ならドロップリストへの登録
-    // todo 変えろ　droplistK/Uのタイムスタンプを見て処理
-    /*
-    if(!droplist.get(selfInfo.coor) || selfInfo.isSearched){
-      // 別タブを警戒してのちょっとした手間
-      droplist = YyLocalStorage.droplist.load();
-      droplist.set(selfInfo.coor, selfInfo.droplist)
-      YyLocalStorage.droplist.save(droplist)
-      console.log(`ここのドロップリストを取得: ${selfInfo.coor} (${selfInfo.droplist[0]}、ほか)`);
-    }
-    */
     // ドロップリストの更新をする　タイムスタンプにエポック分を使う
     const timestamp = Math.floor(Date.now() / 60000)
     if(config.isDroplistUSaveEnabled && isUnknownDroplist(selfInfo.droplist)){
@@ -183,13 +168,18 @@
       if(!cell.isSearched && !cell.isShining){
         if(droplistK.has(coor)){
           //  かけらが含まれるなら★、それ以外の判明済み使用アイテムなら▲
-          cell.dom.innerText = droplistK.get(coor)?.[1].some(drop => drop.startsWith("力のかけら")) ? "★" : "▲"
+          cell.dom.innerText = droplistK.get(coor)?.[1].some(drop => drop.startsWith("力のかけら") || drop.startsWith("体力の果実")) ? "★" : "▲"
         }else if(droplistU.has(coor)){
           //  未判明で使用アイテムが含まれるなら●、そうでないなら〇
           cell.dom.innerText = droplistU.get(coor)?.[1].includes("使用アイテム") ? "●" : "〇"
         }
       }
-      
+
+      // 自分の位置を「自」
+      if(cell.coor == selfInfo.coor){
+        cell.dom.innerText = "自"
+      }
+
       // なんか記号をいっぱいつけてある状態だと旗の白が目に痛いから色変えるね……
       if(cell.isSearched){
         cell.dom.querySelector("i").style.color = "purple"
@@ -222,14 +212,15 @@
    * isShiningはもうあんまり役に立たない　探索済みの旗が立ってたらきらきらが表示されないので
    */
   // 　
-  function getLocalMap(json){
-    // セルの数を取得する。15x15=225セルが存在するはずなので、不一致の時は中断する。マップの端に行ったときの挙動が分からないので……。
+  function getLocalMap(json, selfInfo){
+    // セルの数を取得する。マップの端は空欄になる。
     const cellSpans = document.querySelectorAll("div.strollmaparea_close > span");
-    if(cellSpans.length != 225){ return; }
-
+    
+    // forで回す際のy,xは自身との座標差。
+    // 公式の全体マップを見る限りでは画面外を見ることがあるのはy方向だけ。
     let idx = 0;
     let localmap = new Map();
-    for(let y = -7; y <= 7; y++){
+    for(let y = Math.max(-7, 0 - selfInfo.y); y <= Math.min(7, 200 - selfInfo.y); y++){
       for(let x = -7; x <= 7; x++){
         // 
         const celldata = {
@@ -323,7 +314,9 @@
     }
   }
 
-  /** <dialog>を利用してconfigなどを設定できるようにする */
+  /** <dialog>を利用してconfigなどを設定できるようにする 
+   * 全体マップのデータを受け取る必要はなくなった　これを利用してブラウザ側で機能を作る予定がなくなったから
+  */
   function appendDialog(){
     // ボタンをつける場所の基準になるボタン6を探す
     const btn6 = document.querySelector("#btn6");
@@ -360,7 +353,6 @@
     <div>
       ボタン押したらアラートが出るまで待ってほしい（ローディングを作るのが手間）<br>
       <br>
-      <button id="yy-receiveWorldmap">全体マップのデータを受け取る</button><br>
       <button id="yy-receiveDroplist">各地の未判明/判明済み探索データを受け取る</button><br>
       <br>
       処理の都合上、全体マップのデータを送信してからじゃないと失敗することがある……。<br>
@@ -404,13 +396,6 @@
 
 
     // 受信系　受け取ってまーーーーーじ
-    dialog.querySelector("#yy-receiveWorldmap").addEventListener("click", async (e) => {
-      const wm = await getFn("/worldmap")
-      worldmap = YyLocalStorage.worldmap.load()
-      wm.forEach(([key, val]) => worldmap.set(key, val))
-      YyLocalStorage.worldmap.save(worldmap)
-      alert(`${wm.length}件の情報を受け取り、現在${worldmap.size}地点の全体マップ情報を持っています。`)
-    })
     dialog.querySelector("#yy-receiveDroplist").addEventListener("click", async (e) => {
       const {known, unknown} = await getFn("/droplist")
       droplistK = YyLocalStorage.droplistK.load()
@@ -428,6 +413,7 @@
     dialog.querySelector("#yy-sendWorldmap").addEventListener("click", async (e) => {
       const result = await postFn("/worldmap", YyLocalStorage.worldmap.get())
       alert(result)
+      /** @todo 送信が終わったら保存してあるworldmapデータを削除していいんだけど、書き込み上限とかでリトライを求める場合の判定が必要になる */
     })
     dialog.querySelector("#yy-sendKnown").addEventListener("click", async (e) => {
       const result = await postFn("/droplist/known", YyLocalStorage.droplistK.get());
