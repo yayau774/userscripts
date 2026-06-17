@@ -3,9 +3,9 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://soraniwa.428.st/gf/*
 // @grant       none
-// @version     2.5
+// @version     2.6
 // @author      -
-// @description 2025/10/12 y軸画面端の挙動、自分の位置を「自」に
+// @description 2026/06/18 データのクリアを実装（いまさら）。
 // @updateURL   https://github.com/yayau774/userscripts/raw/main/soraniwa-greenfest-re/yyEnhancedMap.user.js
 // ==/UserScript==
 
@@ -359,6 +359,8 @@
       <button id="yy-sendWorldmap">全体マップのデータを送信する</button><br>
       <button id="yy-sendUnknown">各地の未判明探索データを送信する</button><br>
       <button id="yy-sendKnown">各地の判明済み探索データを送信する</button><br>
+      <br>
+      <button id="yy-clearLocalStrage">yy-Enhanced-Mapによってデバイスに保存されているデータをすべて削除</button
     </div>
     <hr>
     <button id="yy-closeDialog">とじる</button>
@@ -422,6 +424,18 @@
     dialog.querySelector("#yy-sendUnknown").addEventListener("click", async (e) => {
       const result = await postFn("/droplist/unknown", YyLocalStorage.droplistU.get());
       alert(result)
+    })
+
+    // LocalStorageを削除
+    dialog.querySelector("#yy-clearLocalStorage").addEventListener("click", async (e) => {
+      YyLocalStorage.config.remove()
+      YyLocalStorage.droplist.remove()
+      YyLocalStorage.droplistK.remove()
+      YyLocalStorage.droplistU.remove()
+      YyLocalStorage.searched.remove()
+      YyLocalStorage.worldmap.remove()
+
+      alert("けした！　ページをリロードするなどしてください。")
     })
 
     // dialogとかのDOMを設置したり
