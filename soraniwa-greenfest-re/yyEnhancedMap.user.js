@@ -3,9 +3,9 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://soraniwa.428.st/gf/*
 // @grant       none
-// @version     2.6
+// @version     2.7
 // @author      -
-// @description 2026/06/18 データのクリアを実装（いまさら）。
+// @description 2026/06/18 データのクリアを実装（いまさら）。+誤字修正
 // @updateURL   https://github.com/yayau774/userscripts/raw/main/soraniwa-greenfest-re/yyEnhancedMap.user.js
 // ==/UserScript==
 
@@ -360,7 +360,7 @@
       <button id="yy-sendUnknown">各地の未判明探索データを送信する</button><br>
       <button id="yy-sendKnown">各地の判明済み探索データを送信する</button><br>
       <br>
-      <button id="yy-clearLocalStrage">yy-Enhanced-Mapによってデバイスに保存されているデータをすべて削除</button
+      <button id="yy-clearLocalStorage">yy-Enhanced-Mapによってデバイスに保存されているデータをすべて削除</button
     </div>
     <hr>
     <button id="yy-closeDialog">とじる</button>
